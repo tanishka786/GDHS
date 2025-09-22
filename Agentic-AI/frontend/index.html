@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orthopedic Assistant - Advanced Testing Interface</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-bone"></i>
+                    <span>Orthopedic AI</span>
+                </div>
+                <div class="connection-status">
+                    <div class="status-indicator" id="connectionStatus"></div>
+                    <span id="connectionText">Connecting...</span>
+                </div>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="nav-item active" data-section="analysis">
+                    <i class="fas fa-x-ray"></i>
+                    <span>X-ray Analysis</span>
+                </div>
+                <div class="nav-item" data-section="agents">
+                    <i class="fas fa-robot"></i>
+                    <span>Agent Testing</span>
+                </div>
+                <div class="nav-item" data-section="mcp">
+                    <i class="fas fa-plug"></i>
+                    <span>MCP Tools</span>
+                </div>
+                <div class="nav-item" data-section="monitoring">
+                    <i class="fas fa-chart-line"></i>
+                    <span>System Monitor</span>
+                </div>
+                <div class="nav-item" data-section="requests">
+                    <i class="fas fa-history"></i>
+                    <span>Request History</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="content-header">
+                <h1 id="sectionTitle">X-ray Analysis</h1>
+                <div class="header-actions">
+                    <button class="btn btn-outline" onclick="clearAll()">
+                        <i class="fas fa-trash"></i> Clear All
+                    </button>
+                    <button class="btn btn-primary" onclick="exportResults()" id="exportBtn" disabled>
+                        <i class="fas fa-download"></i> Export Results
+                    </button>
+                </div>
+            </header>
+
+            <!-- Analysis Section -->
+            <section id="analysis-section" class="content-section active">
+                <div class="analysis-grid">
+                    <!-- Upload Panel -->
+                    <div class="panel upload-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-upload"></i> Image Upload</h3>
+                        </div>
+                        <div class="panel-content">
+                            <div class="upload-zone" id="uploadZone">
+                                <div class="upload-content">
+                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                    <h4>Drop X-ray image here</h4>
+                                    <p>or click to browse files</p>
+                                    <div class="upload-formats">
+                                        <span>JPG</span>
+                                        <span>PNG</span>
+                                        <span>DICOM</span>
+                                    </div>
+                                </div>
+                                <input type="file" id="fileInput" accept="image/*,.dcm" hidden>
+                            </div>
+                            
+                            <div class="image-preview" id="imagePreview" style="display: none;">
+                                <div class="image-container">
+                                    <img id="previewImage" alt="Uploaded X-ray">
+                                    <div class="image-overlay">
+                                        <button class="btn btn-small btn-danger" onclick="removeImage()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="image-details">
+                                    <div class="detail-item">
+                                        <span class="label">File:</span>
+                                        <span id="fileName">-</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="label">Size:</span>
+                                        <span id="fileSize">-</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="label">Type:</span>
+                                        <span id="fileType">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuration Panel -->
+                    <div class="panel config-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-cog"></i> Analysis Configuration</h3>
+                        </div>
+                        <div class="panel-content">
+                            <div class="form-group">
+                                <label for="analysisMode">Processing Mode</label>
+                                <select id="analysisMode" class="form-control">
+                                    <option value="auto">Automatic - Full AI Pipeline</option>
+                                    <option value="guided">Guided - Interactive Prompts</option>
+                                    <option value="advanced">Advanced - Custom Settings</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="symptoms">Patient Symptoms</label>
+                                <textarea id="symptoms" class="form-control" rows="3" 
+                                    placeholder="Describe pain, swelling, mechanism of injury..."></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Body Part Preference</label>
+                                <div class="radio-group">
+                                    <label class="radio-label">
+                                        <input type="radio" name="bodyPart" value="auto" checked>
+                                        <span>Auto-detect</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="bodyPart" value="hand">
+                                        <span>Hand/Wrist</span>
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="bodyPart" value="leg">
+                                        <span>Leg/Foot</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="advanced-options" id="advancedOptions" style="display: none;">
+                                <div class="form-group">
+                                    <label for="confidenceThreshold">Confidence Threshold</label>
+                                    <input type="range" id="confidenceThreshold" min="0.1" max="0.9" step="0.1" value="0.5">
+                                    <span class="range-value">0.5</span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="nmsThreshold">NMS Threshold</label>
+                                    <input type="range" id="nmsThreshold" min="0.1" max="0.9" step="0.1" value="0.5">
+                                    <span class="range-value">0.5</span>
+                                </div>
+                            </div>
+
+                            <div class="action-buttons">
+                                <button class="btn btn-primary btn-large" id="analyzeBtn" disabled onclick="startAnalysis()">
+                                    <i class="fas fa-microscope"></i>
+                                    Analyze X-ray
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Panel -->
+                <div class="panel results-panel" id="resultsPanel" style="display: none;">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-chart-bar"></i> Analysis Results</h3>
+                        <div class="panel-actions">
+                            <button class="btn btn-outline btn-small" onclick="toggleResultsView()">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <div class="results-grid">
+                            <!-- Triage Card -->
+                            <div class="result-card triage-card">
+                                <div class="card-header">
+                                    <h4><i class="fas fa-exclamation-triangle"></i> Triage Assessment</h4>
+                                </div>
+                                <div class="card-content">
+                                    <div class="triage-level" id="triageLevel">
+                                        <div class="triage-badge" id="triageBadge">PROCESSING</div>
+                                        <div class="triage-confidence" id="triageConfidence">-</div>
+                                    </div>
+                                    <div class="triage-description" id="triageDescription">
+                                        Analysis in progress...
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Detections Card -->
+                            <div class="result-card detections-card">
+                                <div class="card-header">
+                                    <h4><i class="fas fa-search"></i> Detected Findings</h4>
+                                    <span class="detection-count" id="detectionCount">0</span>
+                                </div>
+                                <div class="card-content">
+                                    <div class="detections-list" id="detectionsList">
+                                        <div class="no-detections">No findings detected</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Images Comparison -->
+                            <div class="result-card images-card">
+                                <div class="card-header">
+                                    <h4><i class="fas fa-images"></i> Image Analysis</h4>
+                                    <div class="image-tabs">
+                                        <button class="tab-btn active" data-tab="original">Original</button>
+                                        <button class="tab-btn" data-tab="annotated">Annotated</button>
+                                        <button class="tab-btn" data-tab="comparison">Compare</button>
+                                    </div>
+                                </div>
+                                <div class="card-content">
+                                    <div class="image-viewer">
+                                        <div class="image-tab active" id="originalTab">
+                                            <img id="originalImage" alt="Original X-ray">
+                                        </div>
+                                        <div class="image-tab" id="annotatedTab">
+                                            <img id="annotatedImage" alt="Annotated X-ray">
+                                            <div class="image-actions">
+                                                <button class="btn btn-outline" onclick="downloadAnnotatedImage()">
+                                                    <i class="fas fa-download"></i> Download
+                                                </button>
+                                                <button class="btn btn-outline" onclick="viewFullscreen('annotated')">
+                                                    <i class="fas fa-expand"></i> Fullscreen
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="image-tab" id="comparisonTab">
+                                            <div class="comparison-view">
+                                                <div class="comparison-image">
+                                                    <h5>Original</h5>
+                                                    <img id="comparisonOriginal" alt="Original">
+                                                </div>
+                                                <div class="comparison-image">
+                                                    <h5>Annotated</h5>
+                                                    <img id="comparisonAnnotated" alt="Annotated">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Medical Summary -->
+                            <div class="result-card summary-card">
+                                <div class="card-header">
+                                    <h4><i class="fas fa-user-md"></i> Medical Summary</h4>
+                                </div>
+                                <div class="card-content">
+                                    <div class="summary-content" id="summaryContent">
+                                        <div class="summary-placeholder">
+                                            Medical summary will appear here after analysis
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recommendations -->
+                            <div class="result-card recommendations-card">
+                                <div class="card-header">
+                                    <h4><i class="fas fa-lightbulb"></i> Recommendations</h4>
+                                </div>
+                                <div class="card-content">
+                                    <div class="recommendations-list" id="recommendationsList">
+                                        <div class="recommendations-placeholder">
+                                            Recommendations will appear here after analysis
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Performance Metrics -->
+                            <div class="result-card metrics-card">
+                                <div class="card-header">
+                                    <h4><i class="fas fa-tachometer-alt"></i> Performance</h4>
+                                </div>
+                                <div class="card-content">
+                                    <div class="metrics-grid" id="performanceMetrics">
+                                        <div class="metric-item">
+                                            <span class="metric-label">Processing Time</span>
+                                            <span class="metric-value" id="processingTime">-</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-label">Detection Time</span>
+                                            <span class="metric-value" id="detectionTime">-</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-label">Model Confidence</span>
+                                            <span class="metric-value" id="modelConfidence">-</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-label">Request ID</span>
+                                            <span class="metric-value" id="requestId">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Agent Testing Section -->
+            <section id="agents-section" class="content-section">
+                <div class="agents-grid">
+                    <div class="panel agent-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-robot"></i> Individual Agent Testing</h3>
+                        </div>
+                        <div class="panel-content">
+                            <div class="agent-tests">
+                                <div class="test-group">
+                                    <h4>Detection Agents</h4>
+                                    <div class="test-buttons">
+                                        <button class="btn btn-outline" onclick="testHandAgent()">
+                                            <i class="fas fa-hand-paper"></i> Test Hand Agent
+                                        </button>
+                                        <button class="btn btn-outline" onclick="testLegAgent()">
+                                            <i class="fas fa-walking"></i> Test Leg Agent
+                                        </button>
+                                        <button class="btn btn-outline" onclick="testBodyPartDetection()">
+                                            <i class="fas fa-search"></i> Body Part Detection
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="test-group">
+                                    <h4>Analysis Agents</h4>
+                                    <div class="test-buttons">
+                                        <button class="btn btn-outline" onclick="testTriageAgent()">
+                                            <i class="fas fa-exclamation-triangle"></i> Triage Agent
+                                        </button>
+                                        <button class="btn btn-outline" onclick="testDiagnosisAgent()">
+                                            <i class="fas fa-stethoscope"></i> Diagnosis Agent
+                                        </button>
+                                        <button class="btn btn-outline" onclick="testReportAgent()">
+                                            <i class="fas fa-file-medical"></i> Report Agent
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="test-group">
+                                    <h4>System Tests</h4>
+                                    <div class="test-buttons">
+                                        <button class="btn btn-primary" onclick="testAllAgents()">
+                                            <i class="fas fa-play"></i> Run All Tests
+                                        </button>
+                                        <button class="btn btn-outline" onclick="testDetectionSystem()">
+                                            <i class="fas fa-cogs"></i> Detection System
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel agent-results-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-chart-line"></i> Agent Test Results</h3>
+                        </div>
+                        <div class="panel-content">
+                            <div id="agentResults" class="test-results">
+                                <div class="no-results">
+                                    Run agent tests to see results here
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MCP Tools Section -->
+            <section id="mcp-section" class="content-section">
+                <div class="mcp-grid">
+                    <div class="panel mcp-tools-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-plug"></i> MCP Tools</h3>
+                        </div>
+                        <div class="panel-content">
+                            <div class="mcp-tools">
+                                <div class="tool-group">
+                                    <h4>Health & Status</h4>
+                                    <button class="btn btn-outline" onclick="mcpHealthCheck()">
+                                        <i class="fas fa-heartbeat"></i> Health Check
+                                    </button>
+                                </div>
+
+                                <div class="tool-group">
+                                    <h4>Medical Knowledge</h4>
+                                    <div class="form-group">
+                                        <input type="text" id="boneName" placeholder="Enter bone name (e.g., radius)" class="form-control">
+                                        <button class="btn btn-outline" onclick="mcpBoneInfo()">
+                                            <i class="fas fa-bone"></i> Get Bone Info
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="tool-group">
+                                    <h4>Condition Analysis</h4>
+                                    <div class="form-group">
+                                        <textarea id="mcpSymptoms" placeholder="Enter symptoms..." class="form-control" rows="3"></textarea>
+                                        <button class="btn btn-outline" onclick="mcpSuggestConditions()">
+                                            <i class="fas fa-search-plus"></i> Suggest Conditions
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="tool-group">
+                                    <h4>X-ray Analysis</h4>
+                                    <button class="btn btn-primary" onclick="mcpAnalyzeXray()" id="mcpAnalyzeBtn" disabled>
+                                        <i class="fas fa-x-ray"></i> MCP X-ray Analysis
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel mcp-results-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-terminal"></i> MCP Results</h3>
+                        </div>
+                        <div class="panel-content">
+                            <div id="mcpResults" class="mcp-output">
+                                <div class="no-results">
+                                    MCP tool results will appear here
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- System Monitoring Section -->
+            <section id="monitoring-section" class="content-section">
+                <div class="monitoring-grid">
+                    <div class="panel system-health-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-heartbeat"></i> System Health</h3>
+                            <button class="btn btn-outline btn-small" onclick="refreshSystemHealth()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                        </div>
+                        <div class="panel-content">
+                            <div id="systemHealthData" class="health-data">
+                                Loading system health...
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel metrics-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-chart-bar"></i> Performance Metrics</h3>
+                        </div>
+                        <div class="panel-content">
+                            <div class="metrics-tabs">
+                                <button class="tab-btn active" data-tab="json">JSON</button>
+                                <button class="tab-btn" data-tab="prometheus">Prometheus</button>
+                                <button class="tab-btn" data-tab="audit">Audit</button>
+                            </div>
+                            <div id="metricsData" class="metrics-data">
+                                <div class="tab-content active" id="jsonMetrics">Loading metrics...</div>
+                                <div class="tab-content" id="prometheusMetrics"></div>
+                                <div class="tab-content" id="auditMetrics"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Request History Section -->
+            <section id="requests-section" class="content-section">
+                <div class="requests-grid">
+                    <div class="panel requests-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-history"></i> Request History</h3>
+                            <button class="btn btn-outline btn-small" onclick="refreshRequests()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                        </div>
+                        <div class="panel-content">
+                            <div class="request-controls">
+                                <div class="form-group">
+                                    <input type="text" id="requestIdSearch" placeholder="Search by Request ID" class="form-control">
+                                    <button class="btn btn-outline" onclick="searchRequest()">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="requestsList" class="requests-list">
+                                Loading requests...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <h3 id="loadingTitle">Processing Analysis</h3>
+                <p id="loadingMessage">Please wait while we analyze your X-ray...</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-steps" id="progressSteps">
+                    <div class="step" data-step="validate">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Validating Image</span>
+                    </div>
+                    <div class="step" data-step="detect">
+                        <i class="fas fa-search"></i>
+                        <span>Detecting Body Part</span>
+                    </div>
+                    <div class="step" data-step="analyze">
+                        <i class="fas fa-microscope"></i>
+                        <span>Analyzing Fractures</span>
+                    </div>
+                    <div class="step" data-step="triage">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Assessing Urgency</span>
+                    </div>
+                    <div class="step" data-step="summarize">
+                        <i class="fas fa-file-medical-alt"></i>
+                        <span>Generating Summary</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fullscreen Modal -->
+        <div class="modal" id="fullscreenModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modalTitle">Image Viewer</h3>
+                    <button class="btn btn-outline" onclick="closeModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <img id="modalImage" alt="Fullscreen Image">
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Container -->
+        <div id="toastContainer" class="toast-container"></div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
